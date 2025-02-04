@@ -1,36 +1,47 @@
-from flask import Flask, request, render_template
-import datetime
-from threading import Thread, Event
+import discord
+from discord.ext import commands
+import os
+from dotenv import load_dotenv
 
-# Flask Uygulaması
-app = Flask(__name__)
-logs = []  # Gelen istekleri saklamak için bir liste
+# Çevre değişkenlerini yükle
+load_dotenv()
 
-# Threading event for stopping the Flask thread
-flask_stop_event = Event()
+# Discord Bot Token
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+CHANNEL_ID = int(os.getenv("DISCORD_CHANNEL_ID", 0))  # Çevre değişkeninden INT olarak al
 
-def run_flask():
-    """Flask uygulamasını başlatır."""
-    while not flask_stop_event.is_set():
-        app.run(host="0.0.0.0", port=5000, debug=False)
+# API Anahtarını Kontrol Et
+if not DISCORD_BOT_TOKEN:
+    raise ValueError("ERROR: DISCORD_BOT_TOKEN bulunamadı! .env dosyanızı kontrol edin.")
 
-@app.route('/')
-def home():
-    """Ana sayfa: Gelen webhook isteklerini gösterir."""
-    return render_template("index.html", logs=logs)
+# Discord Botu Başlat
+intents = discord.Intents.default()
+intents.message_content = True  # Mesaj içeriğini dinlemek için
+bot = commands.Bot(command_prefix="!", intents=intents)
 
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    """Dışarıdan gelen istekleri dinler ve loglar."""
+@bot.event
+async def on_ready():
+    """Bot başarıyla açıldığında çalışır."""
+    print(f"✅ Bot aktif: {bot.user.name}")
+    
     try:
-        data = request.json
-        message = f"📩 Yeni Webhook Mesajı: {data}"
-        logs.insert(0, {"message": message, "timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
-        return {"status": "success", "message": "Webhook alındı."}, 200
+        channel = bot.get_channel(CHANNEL_ID)
+        if channel:
+            await channel.send("🚀 Bot başarıyla başlatıldı!")
     except Exception as e:
-        print(f"❌ Webhook işlenirken hata oluştu: {str(e)}")
-        return {"status": "error", "message": str(e)}, 400
+        print(f"❌ Discord mesajı gönderilirken hata oluştu: {str(e)}")
 
-# Flask'i farklı bir threadde çalıştır
-flask_thread = Thread(target=run_flask, daemon=True)
-flask_thread.start()
+@bot.command()
+async def ping(ctx):
+    """Ping komutu botun çalıştığını test eder."""
+    try:
+        await ctx.send("🏓 Pong!")
+    except Exception as e:
+        print(f"❌ Ping komutu çalıştırılırken hata oluştu: {str(e)}")
+
+# Botu çalıştır
+try:
+    print("🚀 Discord botu başlatılıyor...")
+    bot.run(DISCORD_BOT_TOKEN)
+except Exception as e:
+    print(f"❌ Bot başlatılırken hata oluştu: {str(e)}")
