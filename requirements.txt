@@ -1,0 +1,6 @@
+flask
+gunicorn
+python-dotenv
+discord.py
+python-binance
+requests

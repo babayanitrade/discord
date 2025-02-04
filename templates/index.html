@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Webhook Logları</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #4caf50;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Webhook Logları</h1>
+    <table>
+      <tr>
+        <th>İşlem</th>
+        <th>Sembol</th>
+        <th>Miktar</th>
+        <th>Başlıklar</th>
+        <th>İçerik</th>
+      </tr>
+      {% for log in logs %}
+      <tr>
+        <td>{{ log.action }}</td>
+        <td>{{ log.symbol }}</td>
+        <td>{{ log.amount }}</td>
+        <td><pre>{{ log.headers }}</pre></td>
+        <td><pre>{{ log.body }}</pre></td>
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>
